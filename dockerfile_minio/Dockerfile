@@ -1,4 +1,6 @@
-FROM minio/minio
+FROM minio/minio:latest
 
-RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc && \
-    chmod +x mc 
+# Use curl to download the MinIO client and make it executable
+RUN curl -O https://dl.min.io/client/mc/release/linux-amd64/mc && \
+    chmod +x mc && \
+    mv mc /usr/local/bin/

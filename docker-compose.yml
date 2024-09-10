@@ -1,4 +1,3 @@
-version: "3.7"
 services:
     minio-image:
         container_name: minio-image
@@ -7,12 +6,12 @@ services:
         restart: always
         working_dir: "/minio-image/storage"
         volumes:
-            - ${WD}/minio/storage:/minio-image/storage
+            - ./Storage/minio/storage:/minio-image/storage
         ports:
             - "9000:9000"
         environment:
-            MINIO_ACCESS_KEY: minio-image
-            MINIO_SECRET_KEY: minio-image-pass
+            MINIO_ROOT_USER: minio-image
+            MINIO_ROOT_PASSWORD: minio-image-pass
         command: server /minio-image/storage
 
     mlflow-image:
@@ -21,7 +20,7 @@ services:
             context: ./dockerfile_mlflowserver
         working_dir: "/mlflow-image"
         volumes:
-            - ${WD}/mlflow:/mlflow-image
+            - ./Storage/mlflow:/mlflow-image
         environment:
             MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
             AWS_ACCESS_KEY_ID: minio-image
@@ -36,9 +35,9 @@ services:
         build:
             context: ./dockerfile_jupyter_notebook
         volumes:
-            - ${WD}/notebooks:/home/jovyan/work
-            - ${WD}/q_pack:/home/jovyan/work/q_pack
-            - ${WD}/mlflow:/mlflow-image
+            - ./Storage/notebooks:/home/jovyan/work
+            - ./Storage/q_pack:/home/jovyan/work/q_pack
+            - ./Storage/mlflow:/mlflow-image
         environment:
             MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
             AWS_ACCESS_KEY_ID: minio-image
@@ -67,8 +66,8 @@ services:
         ports:
             - "8088:8088"
         volumes:
-            - ${WD}/superset/superset_config.py:/etc/superset/superset_config.py
-            - ${WD}/superset/superset.db:/var/lib/superset/superset.db              
+            - ./Storage/superset/superset_config.py:/etc/superset/superset_config.py
+            - ./Storage/superset/superset.db:/var/lib/superset/superset.db              
         
     postgres_secmaster:
         image: postgres
@@ -80,7 +79,7 @@ services:
             - SHARED_PASSWORD=password
             - POSTGRES_PASSWORD=posgres349
         volumes:
-            - ${WD}/postgress_db/scripts/:/docker-entrypoint-initdb.d/ 
+            - ./Storage/postgress_db/scripts/:/docker-entrypoint-initdb.d/ 
             - pg_data:/var/lib/postgresql/data
 
     pgadmin:
@@ -90,7 +89,7 @@ services:
             PGADMIN_DEFAULT_EMAIL: "guest"
             PGADMIN_DEFAULT_PASSWORD: "guest"
         volumes:
-            - ${WD}/pgadmin/:/var/lib/pgadmin 
+            - ./Storage/pgadmin/:/var/lib/pgadmin 
         ports:
             - 1234:80
         depends_on:
@@ -119,8 +118,8 @@ services:
             - EXECUTOR=Local
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
         volumes:
-            - ${WD}/airflow/dags:/usr/local/airflow/dags
-            - ${WD}/q_pack:/usr/local/airflow/dags/q_pack
+            - ./Storage/airflow/dags:/usr/local/airflow/dags
+            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
         ports:
             - 8080:8080
         command: webserver
